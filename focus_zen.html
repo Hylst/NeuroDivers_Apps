@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FocusZen - Jeu de Concentration Multisensoriel</title>
+    <title>FocusZen Pro - Jeu de Concentration Multisensoriel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Roboto+Mono:wght@400;500&display=swap');
         
         :root {
             --primary: #4F46E5;
@@ -20,6 +20,10 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f8fafc;
+        }
+        
+        .code-font {
+            font-family: 'Roboto Mono', monospace;
         }
         
         .sensory-card {
@@ -58,6 +62,45 @@
             background: linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0%, rgba(79, 70, 229, 0.3) 100%);
             border-left: 4px solid var(--primary);
         }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .float-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes colorCycle {
+            0% { background-color: #E1F5FE; }
+            25% { background-color: #E8F5E9; }
+            50% { background-color: #FFF8E1; }
+            75% { background-color: #FBE9E7; }
+            100% { background-color: #E1F5FE; }
+        }
+        
+        .color-cycle {
+            animation: colorCycle 20s infinite;
+            background-size: 200% 200%;
+        }
+        
+        .task-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .task-icon:hover {
+            transform: scale(1.1) rotate(10deg);
+        }
+        
+        .breathing-circle {
+            animation: breathe 6s infinite ease-in-out;
+        }
+        
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
     </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
@@ -65,37 +108,57 @@
         <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-center mb-8">
             <div class="flex items-center mb-4 md:mb-0">
-                <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center mr-4">
+                <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center mr-4 float-animation">
                     <i class="fas fa-brain text-white text-xl"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800">Focus<span class="text-indigo-600">Zen</span></h1>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Focus<span class="text-indigo-600">Zen</span> Pro</h1>
+                    <p class="text-sm text-gray-500">Créé par Geoffroy Streit</p>
+                </div>
             </div>
             <div class="flex items-center space-x-4">
                 <div class="relative group">
                     <button id="settingsBtn" class="p-2 rounded-full hover:bg-indigo-100 transition-colors">
                         <i class="fas fa-cog text-indigo-600 text-xl"></i>
                     </button>
-                    <div class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg p-4 hidden group-hover:block z-10">
-                        <h3 class="font-semibold text-gray-800 mb-2">Paramètres</h3>
-                        <div class="space-y-3">
+                    <div class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg p-4 hidden group-hover:block z-10">
+                        <h3 class="font-semibold text-gray-800 mb-3">Paramètres avancés</h3>
+                        <div class="space-y-4">
                             <div>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="soundToggle" class="rounded text-indigo-600" checked>
-                                    <span class="ml-2 text-gray-700">Effets sonores</span>
-                                </label>
+                                <label class="block text-gray-700 mb-1">Effets sonores</label>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">Désactivé</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="soundToggle" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                    </label>
+                                    <span class="text-sm text-gray-500">Activé</span>
+                                </div>
                             </div>
                             <div>
-                                <label class="flex items-center">
-                                    <input type="checkbox" id="vibrationToggle" class="rounded text-indigo-600">
-                                    <span class="ml-2 text-gray-700">Vibration</span>
-                                </label>
+                                <label class="block text-gray-700 mb-1">Feedback tactile</label>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">Doux</span>
+                                    <input type="range" id="vibrationIntensity" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="2" value="1">
+                                    <span class="text-sm text-gray-500">Fort</span>
+                                </div>
                             </div>
                             <div>
-                                <label class="text-gray-700 block mb-1">Difficulté</label>
+                                <label class="block text-gray-700 mb-1">Thème visuel</label>
+                                <select id="themeSelect" class="w-full rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:border-indigo-500">
+                                    <option value="light">Clair</option>
+                                    <option value="dark">Sombre</option>
+                                    <option value="nature">Nature</option>
+                                    <option value="ocean">Océan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 mb-1">Difficulté</label>
                                 <select id="difficultySelect" class="w-full rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 focus:border-indigo-500">
                                     <option value="easy">Facile</option>
                                     <option value="medium" selected>Moyen</option>
                                     <option value="hard">Difficile</option>
+                                    <option value="expert">Expert</option>
                                 </select>
                             </div>
                         </div>
@@ -115,13 +178,23 @@
             <!-- Left Column - Game Area -->
             <div class="lg:col-span-2 space-y-8">
                 <!-- Timer and Focus Task -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden color-cycle">
                     <div class="p-6">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Mission de Concentration</h2>
+                        <div class="flex justify-between items-start mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">Mission de Concentration</h2>
+                            <div class="flex items-center bg-indigo-100 px-3 py-1 rounded-full">
+                                <i class="fas fa-bolt text-indigo-600 mr-1"></i>
+                                <span class="text-sm font-medium text-indigo-800">XP: <span id="currentXP">1,240</span></span>
+                            </div>
+                        </div>
+                        
                         <div class="flex flex-col md:flex-row items-center justify-between mb-6">
                             <div class="mb-4 md:mb-0">
-                                <h3 class="text-lg font-semibold text-gray-700">Niveau actuel: <span id="currentLevel" class="text-indigo-600">3</span></h3>
-                                <p class="text-gray-500">Prochain niveau dans <span id="pointsToNextLevel" class="font-medium">120</span> points</p>
+                                <h3 class="text-lg font-semibold text-gray-700">Niveau <span id="currentLevel" class="text-indigo-600">3</span></h3>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                    <div id="levelProgress" class="bg-indigo-600 h-2 rounded-full" style="width: 45%"></div>
+                                </div>
+                                <p class="text-sm text-gray-500 mt-1"><span id="pointsToNextLevel">120</span> XP jusqu'au prochain niveau</p>
                             </div>
                             <div class="relative w-32 h-32">
                                 <svg class="w-full h-full" viewBox="0 0 100 100">
@@ -135,20 +208,37 @@
                             </div>
                         </div>
                         
-                        <div id="focusTask" class="bg-indigo-50 rounded-lg p-6 mb-6 sensory-highlight">
-                            <h3 class="font-semibold text-indigo-800 mb-3">Tâche actuelle:</h3>
-                            <p id="taskDescription" class="text-gray-800">Trouvez et cliquez sur tous les nombres pairs dans l'ordre croissant. Ignorez les nombres impairs.</p>
+                        <div id="focusTask" class="bg-white bg-opacity-80 rounded-lg p-6 mb-6 border border-gray-200 shadow-inner">
+                            <div class="flex items-start">
+                                <div id="taskIcon" class="task-icon w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                    <i class="fas fa-sort-numeric-up text-indigo-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-indigo-800 mb-2">Tâche actuelle:</h3>
+                                    <p id="taskDescription" class="text-gray-800">Trouvez et cliquez sur tous les nombres pairs dans l'ordre croissant. Ignorez les nombres impairs.</p>
+                                    <div class="mt-3 flex items-center text-sm text-gray-500">
+                                        <i class="fas fa-star-half-alt mr-1 text-yellow-500"></i>
+                                        <span>Difficulté: Moyenne</span>
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-coins mr-1 text-yellow-600"></i>
+                                        <span>Récompense: 50 XP</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
-                        <div class="flex justify-between">
-                            <button id="startBtn" class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center">
+                        <div class="flex flex-wrap justify-between gap-3">
+                            <button id="startBtn" class="flex-1 min-w-[150px] px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors flex items-center justify-center">
                                 <i class="fas fa-play mr-2"></i> Commencer
                             </button>
-                            <button id="pauseBtn" disabled class="px-6 py-3 bg-gray-300 text-gray-600 rounded-lg font-medium transition-colors flex items-center">
+                            <button id="pauseBtn" disabled class="flex-1 min-w-[150px] px-6 py-3 bg-gray-300 text-gray-600 rounded-lg font-medium transition-colors flex items-center justify-center">
                                 <i class="fas fa-pause mr-2"></i> Pause
                             </button>
-                            <button id="skipBtn" class="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center">
+                            <button id="skipBtn" class="flex-1 min-w-[150px] px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center">
                                 <i class="fas fa-forward mr-2"></i> Passer
+                            </button>
+                            <button id="breathBtn" class="flex-1 min-w-[150px] px-6 py-3 bg-green-100 text-green-800 rounded-lg font-medium hover:bg-green-200 transition-colors flex items-center justify-center">
+                                <i class="fas fa-wind mr-2"></i> Respirer
                             </button>
                         </div>
                     </div>
@@ -157,9 +247,74 @@
                 <!-- Sensory Game Board -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="p-6">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Tableau Sensoriel</h2>
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-2xl font-bold text-gray-800">Tableau Sensoriel</h2>
+                            <div class="flex items-center space-x-2">
+                                <span id="taskProgress" class="text-sm font-medium text-gray-700">0/5 complétés</span>
+                                <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-check text-indigo-600 text-sm"></i>
+                                </div>
+                            </div>
+                        </div>
                         <div id="gameBoard" class="grid grid-cols-3 md:grid-cols-5 gap-4 min-h-64">
                             <!-- Numbers will be generated here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New Features Section -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Découvrez nos nouvelles fonctionnalités</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-indigo-50 rounded-lg p-5 sensory-card">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-microphone text-indigo-600"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-indigo-800">Commandes vocales</h3>
+                                </div>
+                                <p class="text-gray-700 text-sm">Contrôlez l'application avec votre voix. Dites "commencer", "pause" ou "suivant".</p>
+                                <button class="mt-3 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium hover:bg-indigo-200 transition-colors">
+                                    Activer
+                                </button>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-5 sensory-card">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-heartbeat text-green-600"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-green-800">Biofeedback</h3>
+                                </div>
+                                <p class="text-gray-700 text-sm">Connectez un capteur pour voir en temps réel votre rythme cardiaque et cohérence.</p>
+                                <button class="mt-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium hover:bg-green-200 transition-colors">
+                                    En savoir plus
+                                </button>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-5 sensory-card">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-users text-purple-600"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-purple-800">Mode groupe</h3>
+                                </div>
+                                <p class="text-gray-700 text-sm">Jouez avec des amis ou collègues et comparez vos performances.</p>
+                                <button class="mt-3 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium hover:bg-purple-200 transition-colors">
+                                    Essayer
+                                </button>
+                            </div>
+                            <div class="bg-yellow-50 rounded-lg p-5 sensory-card">
+                                <div class="flex items-center mb-3">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-chart-line text-yellow-600"></i>
+                                    </div>
+                                    <h3 class="font-semibold text-yellow-800">Analytiques avancées</h3>
+                                </div>
+                                <p class="text-gray-700 text-sm">Visualisez votre progression sur 30 jours avec des graphiques détaillés.</p>
+                                <button class="mt-3 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium hover:bg-yellow-200 transition-colors">
+                                    Voir les stats
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -167,10 +322,64 @@
             
             <!-- Right Column - Stats and Rewards -->
             <div class="space-y-8">
-                <!-- User Stats -->
+                <!-- User Profile -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="p-6">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Vos Statistiques</h2>
+                        <div class="flex items-center mb-4">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                                <i class="fas fa-user text-indigo-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">Geoffroy Streit</h2>
+                                <p class="text-gray-500">Membre depuis: Mars 2023</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div>
+                                <div class="text-2xl font-bold text-indigo-600">24</div>
+                                <div class="text-xs text-gray-500 uppercase tracking-wider">Sessions</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-green-600">87%</div>
+                                <div class="text-xs text-gray-500 uppercase tracking-wider">Réussite</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-bold text-yellow-600">5</div>
+                                <div class="text-xs text-gray-500 uppercase tracking-wider">Badges</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Daily Challenge -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold text-gray-800">Défi du jour</h2>
+                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Nouveau</span>
+                        </div>
+                        <div class="bg-yellow-50 rounded-lg p-4 mb-4">
+                            <h3 class="font-semibold text-yellow-800 mb-2">Séquence de mémoire</h3>
+                            <p class="text-gray-700 text-sm mb-3">Mémorisez et répétez la séquence de couleurs affichée. 3 niveaux de difficulté disponibles.</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-yellow-600 font-medium">+100 XP bonus</span>
+                                <button class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium hover:bg-yellow-200 transition-colors">
+                                    Essayer
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                                Voir tous les défis
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-6">
+                        <h2 class="text-xl font-bold text-gray-800 mb-4">Vos Statistiques</h2>
                         <div class="space-y-4">
                             <div>
                                 <div class="flex justify-between mb-1">
@@ -180,6 +389,7 @@
                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                                     <div class="bg-indigo-600 h-2.5 rounded-full" style="width: 45%"></div>
                                 </div>
+                                <div class="text-right text-xs text-gray-500 mt-1">Objectif: 60 min</div>
                             </div>
                             <div>
                                 <div class="flex justify-between mb-1">
@@ -189,6 +399,7 @@
                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                                     <div class="bg-green-500 h-2.5 rounded-full" style="width: 80%"></div>
                                 </div>
+                                <div class="text-right text-xs text-gray-500 mt-1">Record: 12 jours</div>
                             </div>
                             <div>
                                 <div class="flex justify-between mb-1">
@@ -198,6 +409,17 @@
                                 <div class="w-full bg-gray-200 rounded-full h-2.5">
                                     <div class="bg-blue-500 h-2.5 rounded-full" style="width: 92%"></div>
                                 </div>
+                                <div class="text-right text-xs text-gray-500 mt-1">+2% vs hier</div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700">Vitesse moyenne</span>
+                                    <span id="averageSpeed" class="font-medium">3.2s</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div class="bg-purple-500 h-2.5 rounded-full" style="width: 75%"></div>
+                                </div>
+                                <div class="text-right text-xs text-gray-500 mt-1">-0.4s vs hier</div>
                             </div>
                         </div>
                     </div>
@@ -207,75 +429,73 @@
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="p-6">
                         <div class="flex justify-between items-center mb-4">
-                            <h2 class="text-2xl font-bold text-gray-800">Récompenses</h2>
+                            <h2 class="text-xl font-bold text-gray-800">Récompenses</h2>
                             <span id="totalPoints" class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium">1,240 pts</span>
                         </div>
                         
-                        <div class="grid grid-cols-3 gap-4 mb-6">
-                            <div class="bg-indigo-50 rounded-lg p-4 text-center sensory-card">
-                                <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                    <i class="fas fa-medal text-indigo-600 text-xl"></i>
-                                </div>
-                                <span class="text-sm font-medium text-gray-700">Explorateur</span>
+                        <div class="grid grid-cols-5 gap-2 mb-4">
+                            <div class="bg-indigo-100 rounded-full w-10 h-10 flex items-center justify-center">
+                                <i class="fas fa-medal text-indigo-600"></i>
                             </div>
-                            <div class="bg-gray-50 rounded-lg p-4 text-center sensory-card">
-                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                    <i class="fas fa-star text-gray-400 text-xl"></i>
-                                </div>
-                                <span class="text-sm font-medium text-gray-500">Maître</span>
+                            <div class="bg-green-100 rounded-full w-10 h-10 flex items-center justify-center">
+                                <i class="fas fa-star text-green-600"></i>
                             </div>
-                            <div class="bg-gray-50 rounded-lg p-4 text-center sensory-card">
-                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                                    <i class="fas fa-trophy text-gray-400 text-xl"></i>
-                                </div>
-                                <span class="text-sm font-medium text-gray-500">Légende</span>
+                            <div class="bg-yellow-100 rounded-full w-10 h-10 flex items-center justify-center">
+                                <i class="fas fa-trophy text-yellow-600"></i>
+                            </div>
+                            <div class="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
+                                <i class="fas fa-rocket text-gray-400"></i>
+                            </div>
+                            <div class="bg-gray-100 rounded-full w-10 h-10 flex items-center justify-center">
+                                <i class="fas fa-crown text-gray-400"></i>
                             </div>
                         </div>
                         
-                        <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                            <div class="flex items-start">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-gift text-yellow-500 text-xl mt-1"></i>
+                        <div class="bg-indigo-50 rounded-lg p-4 mb-4">
+                            <h3 class="font-semibold text-indigo-800 mb-2">Prochain badge</h3>
+                            <div class="flex items-center">
+                                <div class="bg-indigo-100 rounded-full w-8 h-8 flex items-center justify-center mr-3">
+                                    <i class="fas fa-fire text-indigo-600 text-sm"></i>
                                 </div>
-                                <div class="ml-3">
-                                    <h3 class="text-lg font-medium text-yellow-800">Récompense du jour!</h3>
-                                    <p class="text-yellow-700">Complétez 3 sessions pour débloquer un badge spécial.</p>
+                                <div class="flex-1">
+                                    <div class="flex justify-between text-sm mb-1">
+                                        <span>Maître du Focus</span>
+                                        <span>500/1000 XP</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                        <div class="bg-indigo-600 h-1.5 rounded-full" style="width: 50%"></div>
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button class="px-4 py-2 bg-white border border-indigo-600 text-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-50 transition-colors">
+                                Échanger des points
+                            </button>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Sensory Controls -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div class="p-6">
-                        <h2 class="text-2xl font-bold text-gray-800 mb-4">Environnement Sensoriel</h2>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-gray-700 mb-2">Ambiance sonore</label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button class="py-2 px-3 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium">Forêt</button>
-                                    <button class="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">Pluie</button>
-                                    <button class="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">Café</button>
+                <!-- Breathing Exercise -->
+                <div id="breathingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+                    <div class="bg-white rounded-xl p-8 max-w-md w-full text-center">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Exercice de respiration</h3>
+                        <div class="relative w-48 h-48 mx-auto my-6">
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="breathing-circle w-40 h-40 bg-indigo-100 rounded-full flex items-center justify-center">
+                                    <span id="breathText" class="text-xl font-medium text-indigo-800">Inspirez</span>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 mb-2">Couleur de fond</label>
-                                <div class="flex space-x-2">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-100 border-2 border-indigo-400 cursor-pointer"></div>
-                                    <div class="w-8 h-8 rounded-full bg-green-100 border border-gray-300 cursor-pointer"></div>
-                                    <div class="w-8 h-8 rounded-full bg-blue-100 border border-gray-300 cursor-pointer"></div>
-                                    <div class="w-8 h-8 rounded-full bg-purple-100 border border-gray-300 cursor-pointer"></div>
-                                    <div class="w-8 h-8 rounded-full bg-pink-100 border border-gray-300 cursor-pointer"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-gray-700 mb-2">Feedback tactile</label>
-                                <div class="flex items-center">
-                                    <input type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value="50">
-                                    <span class="ml-3 text-sm text-gray-600">Moyen</span>
-                                </div>
-                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-6">Suivez le rythme pour calmer votre esprit et améliorer votre concentration.</p>
+                        <div class="flex justify-center space-x-4">
+                            <button id="cancelBreathBtn" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+                                Annuler
+                            </button>
+                            <button id="completeBreathBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                                Terminer
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -288,12 +508,15 @@
     <audio id="wrongSound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" preload="auto"></audio>
     <audio id="completeSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
     <audio id="levelUpSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" preload="auto"></audio>
+    <audio id="breathInSound" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.mp3" preload="auto"></audio>
+    <audio id="breathOutSound" src="https://assets.mixkit.co/sfx/preview/mixkit-quick-jump-arcade-game-239.mp3" preload="auto"></audio>
     <audio id="backgroundMusic" loop src="https://assets.mixkit.co/music/preview/mixkit-relaxing-meditation-ambient-174.mp3" preload="auto"></audio>
 
     <script>
-        // Game State
+        // Enhanced Game State
         const gameState = {
             isRunning: false,
+            isBreathing: false,
             timeLeft: 300, // 5 minutes in seconds
             currentLevel: 3,
             points: 1240,
@@ -301,11 +524,23 @@
             streak: 5,
             accuracy: 92,
             todayFocus: 27,
+            averageSpeed: 3.2,
+            vibrationIntensity: 1,
+            currentTheme: 'light',
             currentTask: {
                 type: 'numbers',
                 description: "Trouvez et cliquez sur tous les nombres pairs dans l'ordre croissant. Ignorez les nombres impairs.",
                 target: [],
-                currentTargetIndex: 0
+                currentTargetIndex: 0,
+                completed: 0,
+                total: 5
+            },
+            userProfile: {
+                name: "Geoffroy Streit",
+                joinDate: "Mars 2023",
+                sessions: 24,
+                successRate: 87,
+                badges: 5
             }
         };
 
@@ -315,6 +550,7 @@
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
         const skipBtn = document.getElementById('skipBtn');
+        const breathBtn = document.getElementById('breathBtn');
         const gameBoard = document.getElementById('gameBoard');
         const currentLevelDisplay = document.getElementById('currentLevel');
         const pointsToNextLevelDisplay = document.getElementById('pointsToNextLevel');
@@ -323,17 +559,29 @@
         const accuracyRateDisplay = document.getElementById('accuracyRate');
         const totalPointsDisplay = document.getElementById('totalPoints');
         const taskDescription = document.getElementById('taskDescription');
+        const taskProgress = document.getElementById('taskProgress');
+        const currentXP = document.getElementById('currentXP');
+        const levelProgress = document.getElementById('levelProgress');
+        const averageSpeed = document.getElementById('averageSpeed');
+        const taskIcon = document.getElementById('taskIcon');
+        const breathingModal = document.getElementById('breathingModal');
+        const cancelBreathBtn = document.getElementById('cancelBreathBtn');
+        const completeBreathBtn = document.getElementById('completeBreathBtn');
+        const breathText = document.getElementById('breathText');
         
         // Audio Elements
         const correctSound = document.getElementById('correctSound');
         const wrongSound = document.getElementById('wrongSound');
         const completeSound = document.getElementById('completeSound');
         const levelUpSound = document.getElementById('levelUpSound');
+        const breathInSound = document.getElementById('breathInSound');
+        const breathOutSound = document.getElementById('breathOutSound');
         const backgroundMusic = document.getElementById('backgroundMusic');
         
-        // Settings
+        // Settings Elements
         const soundToggle = document.getElementById('soundToggle');
-        const vibrationToggle = document.getElementById('vibrationToggle');
+        const vibrationIntensity = document.getElementById('vibrationIntensity');
+        const themeSelect = document.getElementById('themeSelect');
         const difficultySelect = document.getElementById('difficultySelect');
 
         // Initialize game
@@ -347,22 +595,40 @@
             startBtn.addEventListener('click', startGame);
             pauseBtn.addEventListener('click', pauseGame);
             skipBtn.addEventListener('click', skipTask);
+            breathBtn.addEventListener('click', startBreathingExercise);
+            cancelBreathBtn.addEventListener('click', cancelBreathingExercise);
+            completeBreathBtn.addEventListener('click', completeBreathingExercise);
+            
             soundToggle.addEventListener('change', toggleSound);
-            vibrationToggle.addEventListener('change', toggleVibration);
+            vibrationIntensity.addEventListener('input', updateVibrationIntensity);
+            themeSelect.addEventListener('change', changeTheme);
             difficultySelect.addEventListener('change', changeDifficulty);
             
             // Background music volume
             backgroundMusic.volume = 0.3;
+            breathInSound.volume = 0.2;
+            breathOutSound.volume = 0.2;
         }
 
         // Generate a new task based on current level
         function generateTask() {
-            const taskTypes = ['numbers', 'colors', 'shapes', 'letters'];
-            const randomType = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+            const taskTypes = [
+                { type: 'numbers', icon: 'sort-numeric-up', color: 'indigo' },
+                { type: 'colors', icon: 'palette', color: 'green' },
+                { type: 'shapes', icon: 'shapes', color: 'yellow' },
+                { type: 'letters', icon: 'font', color: 'purple' },
+                { type: 'sequence', icon: 'random', color: 'pink' }
+            ];
             
-            switch(randomType) {
+            const randomTask = taskTypes[Math.floor(Math.random() * taskTypes.length)];
+            gameState.currentTask.type = randomTask.type;
+            
+            // Update task icon
+            taskIcon.innerHTML = `<i class="fas fa-${randomTask.icon} text-${randomTask.color}-600 text-xl"></i>`;
+            taskIcon.className = `task-icon w-12 h-12 rounded-full bg-${randomTask.color}-100 flex items-center justify-center mr-4`;
+            
+            switch(randomTask.type) {
                 case 'numbers':
-                    gameState.currentTask.type = 'numbers';
                     gameState.currentTask.description = "Trouvez et cliquez sur tous les nombres pairs dans l'ordre croissant. Ignorez les nombres impairs.";
                     
                     // Generate 15 random numbers between 1 and 50
@@ -374,17 +640,31 @@
                     // Set target as even numbers sorted ascending
                     gameState.currentTask.target = numbers.filter(n => n % 2 === 0).sort((a, b) => a - b);
                     gameState.currentTask.currentTargetIndex = 0;
+                    gameState.currentTask.completed = 0;
+                    gameState.currentTask.total = gameState.currentTask.target.length;
+                    break;
+                    
+                case 'colors':
+                    gameState.currentTask.description = "Cliquez sur les carrés dans l'ordre des couleurs de l'arc-en-ciel (rouge, orange, jaune, vert, bleu, violet).";
+                    // Implementation would go here
                     break;
                     
                 // Other task types can be added here
                 default:
-                    gameState.currentTask.type = 'numbers';
                     gameState.currentTask.description = "Trouvez et cliquez sur tous les nombres pairs dans l'ordre croissant. Ignorez les nombres impairs.";
                     gameState.currentTask.target = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
                     gameState.currentTask.currentTargetIndex = 0;
+                    gameState.currentTask.completed = 0;
+                    gameState.currentTask.total = gameState.currentTask.target.length;
             }
             
             taskDescription.textContent = gameState.currentTask.description;
+            updateTaskProgress();
+        }
+
+        // Update task progress display
+        function updateTaskProgress() {
+            taskProgress.textContent = `${gameState.currentTask.completed}/${gameState.currentTask.total} complétés`;
         }
 
         // Render the game board based on current task
@@ -399,7 +679,7 @@
                 }
                 
                 // Make sure some target numbers are included
-                const targetsToInclude = Math.min(3, gameState.currentTask.target.length);
+                const targetsToInclude = Math.min(5, gameState.currentTask.target.length);
                 for (let i = 0; i < targetsToInclude; i++) {
                     const randomPos = Math.floor(Math.random() * numbers.length);
                     numbers[randomPos] = gameState.currentTask.target[i];
@@ -429,10 +709,14 @@
             const isTarget = e.target.dataset.isTarget === 'true';
             const currentTarget = gameState.currentTask.target[gameState.currentTask.currentTargetIndex];
             
+            // Calculate reaction time (for stats)
+            const reactionTime = calculateReactionTime();
+            gameState.averageSpeed = (gameState.averageSpeed * gameState.currentTask.completed + reactionTime) / (gameState.currentTask.completed + 1);
+            
             if (isTarget && clickedValue === currentTarget) {
                 // Correct selection
                 if (soundToggle.checked) correctSound.play();
-                if (vibrationToggle.checked) navigator.vibrate(50);
+                triggerVibration(gameState.vibrationIntensity);
                 
                 // Visual feedback
                 e.target.classList.remove('bg-indigo-100', 'hover:bg-indigo-200');
@@ -444,7 +728,11 @@
                 
                 // Update game state
                 gameState.currentTask.currentTargetIndex++;
+                gameState.currentTask.completed++;
                 gameState.points += 10;
+                
+                // Update task progress
+                updateTaskProgress();
                 
                 // Check if task is complete
                 if (gameState.currentTask.currentTargetIndex >= gameState.currentTask.target.length) {
@@ -456,7 +744,7 @@
             } else if (isTarget) {
                 // Wrong order
                 if (soundToggle.checked) wrongSound.play();
-                if (vibrationToggle.checked) navigator.vibrate(200);
+                triggerVibration(gameState.vibrationIntensity * 2);
                 
                 e.target.classList.remove('bg-indigo-100', 'hover:bg-indigo-200');
                 e.target.classList.add('bg-red-100', 'hover:bg-red-200');
@@ -464,10 +752,11 @@
                 
                 // Penalty
                 gameState.points = Math.max(0, gameState.points - 5);
+                gameState.accuracy = Math.max(0, gameState.accuracy - 1);
             } else {
                 // Wrong selection (not a target)
                 if (soundToggle.checked) wrongSound.play();
-                if (vibrationToggle.checked) navigator.vibrate(100);
+                triggerVibration(gameState.vibrationIntensity);
                 
                 e.target.classList.remove('bg-gray-100', 'hover:bg-gray-200');
                 e.target.classList.add('bg-red-100', 'hover:bg-red-200');
@@ -475,9 +764,25 @@
                 
                 // Penalty
                 gameState.points = Math.max(0, gameState.points - 2);
+                gameState.accuracy = Math.max(0, gameState.accuracy - 0.5);
             }
             
             updateStats();
+        }
+
+        // Calculate reaction time for stats
+        function calculateReactionTime() {
+            // In a real app, we would track actual time between task display and response
+            // For demo purposes, we'll return a random value between 1.5s and 4.5s
+            return (Math.random() * 3 + 1.5).toFixed(1);
+        }
+
+        // Trigger vibration if supported
+        function triggerVibration(intensity) {
+            if (vibrationToggle.checked && navigator.vibrate) {
+                const duration = intensity * 50; // 50ms per intensity level
+                navigator.vibrate(duration);
+            }
         }
 
         // Create visual feedback particles
@@ -521,6 +826,8 @@
             // Update stats
             gameState.todayFocus += 5;
             gameState.streak++;
+            gameState.accuracy = Math.min(100, gameState.accuracy + 2);
+            gameState.points += 50;
             
             // Check for level up
             gameState.pointsToNextLevel -= 50;
@@ -538,9 +845,14 @@
                     </div>
                     <h3 class="text-2xl font-bold text-gray-800 mb-2">Tâche accomplie!</h3>
                     <p class="text-gray-600 mb-4">Vous avez gagné 50 points supplémentaires.</p>
-                    <button id="nextTaskBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
-                        Prochaine tâche
-                    </button>
+                    <div class="flex justify-center space-x-4">
+                        <button id="nextTaskBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+                            Prochaine tâche
+                        </button>
+                        <button id="takeBreakBtn" class="px-6 py-2 bg-green-100 text-green-800 rounded-lg font-medium hover:bg-green-200 transition-colors">
+                            Prendre une pause
+                        </button>
+                    </div>
                 </div>
             `;
             
@@ -550,6 +862,11 @@
                 completeFeedback.remove();
                 generateTask();
                 renderGameBoard();
+            });
+            
+            document.getElementById('takeBreakBtn').addEventListener('click', () => {
+                completeFeedback.remove();
+                pauseGame();
             });
             
             updateStats();
@@ -572,6 +889,10 @@
                     </div>
                     <h3 class="text-2xl font-bold text-gray-800 mb-2">Niveau supérieur!</h3>
                     <p class="text-gray-600 mb-4">Vous avez atteint le niveau ${gameState.currentLevel}.</p>
+                    <div class="bg-indigo-50 rounded-lg p-4 mb-6">
+                        <h4 class="font-semibold text-indigo-800 mb-2">Nouveaux débloqués:</h4>
+                        <p class="text-sm text-gray-700">- Tâches de mémoire avancées<br>- Statistiques détaillées<br>- Thème visuel personnalisé</p>
+                    </div>
                     <button id="continueBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
                         Continuer
                     </button>
@@ -630,6 +951,74 @@
             updateStats();
         }
 
+        // Start breathing exercise
+        function startBreathingExercise() {
+            gameState.isBreathing = true;
+            breathingModal.classList.remove('hidden');
+            
+            let breathCycle = 0;
+            const maxCycles = 3; // 3 complete breath cycles
+            
+            function breathingAnimation() {
+                if (!gameState.isBreathing) return;
+                
+                // Inhale
+                breathText.textContent = "Inspirez";
+                if (soundToggle.checked) breathInSound.play();
+                
+                setTimeout(() => {
+                    // Hold
+                    breathText.textContent = "Retenez";
+                    
+                    setTimeout(() => {
+                        // Exhale
+                        breathText.textContent = "Expirez";
+                        if (soundToggle.checked) breathOutSound.play();
+                        
+                        setTimeout(() => {
+                            breathCycle++;
+                            if (breathCycle >= maxCycles) {
+                                completeBreathingExercise();
+                            } else {
+                                breathingAnimation();
+                            }
+                        }, 3000); // Exhale for 3 seconds
+                    }, 1000); // Hold for 1 second
+                }, 4000); // Inhale for 4 seconds
+            }
+            
+            breathingAnimation();
+        }
+
+        // Cancel breathing exercise
+        function cancelBreathingExercise() {
+            gameState.isBreathing = false;
+            breathingModal.classList.add('hidden');
+        }
+
+        // Complete breathing exercise
+        function completeBreathingExercise() {
+            gameState.isBreathing = false;
+            breathingModal.classList.add('hidden');
+            
+            // Reward for completing breathing exercise
+            gameState.points += 20;
+            updateStats();
+            
+            // Show completion message
+            const breathComplete = document.createElement('div');
+            breathComplete.className = 'fixed bottom-4 right-4 bg-green-100 text-green-800 px-4 py-2 rounded-lg shadow-md flex items-center';
+            breathComplete.innerHTML = `
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>Exercice de respiration terminé! +20 XP</span>
+            `;
+            document.body.appendChild(breathComplete);
+            
+            setTimeout(() => {
+                breathComplete.remove();
+            }, 3000);
+        }
+
         // Game over
         function gameOver() {
             clearInterval(gameState.timerInterval);
@@ -647,7 +1036,20 @@
                         <i class="fas fa-hourglass-end text-indigo-500 text-4xl"></i>
                     </div>
                     <h3 class="text-2xl font-bold text-gray-800 mb-2">Temps écoulé!</h3>
-                    <p class="text-gray-600 mb-4">Vous avez gagné ${gameState.points} points cette session.</p>
+                    <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-700">Points gagnés:</span>
+                            <span class="font-medium">${gameState.points} XP</span>
+                        </div>
+                        <div class="flex justify-between mb-2">
+                            <span class="text-gray-700">Tâches complétées:</span>
+                            <span class="font-medium">${gameState.currentTask.completed}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-700">Précision:</span>
+                            <span class="font-medium">${gameState.accuracy}%</span>
+                        </div>
+                    </div>
                     <div class="flex justify-center space-x-4">
                         <button id="restartBtn" class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
                             Recommencer
@@ -664,7 +1066,7 @@
             document.getElementById('restartBtn').addEventListener('click', () => {
                 gameOverFeedback.remove();
                 gameState.timeLeft = 300;
-                gameState.points = Math.floor(gameState.points * 0.8);
+                gameState.points = Math.floor(gameState.points * 0.9); // 10% penalty for restart
                 updateTimerDisplay();
                 startGame();
             });
@@ -696,8 +1098,14 @@
             pointsToNextLevelDisplay.textContent = gameState.pointsToNextLevel;
             todayFocusDisplay.textContent = gameState.todayFocus;
             currentStreakDisplay.textContent = `${gameState.streak} jours`;
-            accuracyRateDisplay.textContent = `${gameState.accuracy}%`;
+            accuracyRateDisplay.textContent = `${gameState.accuracy.toFixed(1)}%`;
             totalPointsDisplay.textContent = `${gameState.points.toLocaleString()} pts`;
+            currentXP.textContent = gameState.points.toLocaleString();
+            averageSpeed.textContent = `${gameState.averageSpeed.toFixed(1)}s`;
+            
+            // Update level progress bar
+            const progressPercent = ((gameState.pointsToNextLevel - 120 - (gameState.currentLevel * 20)) / (120 + (gameState.currentLevel * 20))) * 100;
+            levelProgress.style.width = `${100 - progressPercent}%`;
         }
 
         // Toggle sound
@@ -709,9 +1117,16 @@
             }
         }
 
-        // Toggle vibration
-        function toggleVibration() {
-            // No implementation needed - handled in click events
+        // Update vibration intensity
+        function updateVibrationIntensity() {
+            gameState.vibrationIntensity = parseInt(vibrationIntensity.value);
+        }
+
+        // Change theme
+        function changeTheme() {
+            gameState.currentTheme = themeSelect.value;
+            // In a full implementation, this would change the CSS variables
+            alert(`Thème changé à: ${themeSelect.value}`);
         }
 
         // Change difficulty
