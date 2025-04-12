@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lire avec Géo - Apprentissage adapté</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'OpenDyslexic';
+            src: url('https://dyslexicfonts.com/fonts/OpenDyslexic-Regular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        body {
+            font-family: 'OpenDyslexic', sans-serif;
+            background-color: #f0f9ff;
+        }
+        
+        .dyslexia-friendly {
+            letter-spacing: 0.05em;
+            line-height: 1.8;
+        }
+        
+        .phonetic-highlight {
+            animation: phoneticPulse 1.5s infinite alternate;
+            background-color: rgba(255, 228, 98, 0.3);
+            border-radius: 3px;
+            padding: 0 2px;
+        }
+        
+        @keyframes phoneticPulse {
+            0% { background-color: rgba(255, 228, 98, 0.3); }
+            100% { background-color: rgba(255, 228, 98, 0.7); }
+        }
+        
+        .syllable {
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        
+        .syllable:hover {
+            transform: scale(1.2);
+            color: #3b82f6;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        .story-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .settings-panel {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        
+        .settings-panel.open {
+            max-height: 500px;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-blue-50">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8">
+            <div class="flex items-center mb-4 md:mb-0">
+                <div class="bg-blue-600 text-white p-3 rounded-full mr-4">
+                    <i class="fas fa-book-open text-2xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-blue-800">Lire avec Géo</h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <button id="settingsToggle" class="bg-white p-3 rounded-full shadow-md hover:bg-blue-100 transition">
+                    <i class="fas fa-cog text-blue-600 text-xl"></i>
+                </button>
+                <div class="relative">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile" class="w-12 h-12 rounded-full border-2 border-blue-400 cursor-pointer">
+                    <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full w-4 h-4 border-2 border-white"></div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Settings Panel -->
+        <div id="settingsPanel" class="settings-panel bg-white rounded-xl shadow-md mb-8 overflow-hidden">
+            <div class="p-6">
+                <h2 class="text-xl font-bold text-blue-800 mb-4">Paramètres personnalisés</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Difficulty Settings -->
+                    <div>
+                        <h3 class="font-semibold text-blue-700 mb-3">Niveau de difficulté</h3>
+                        <div class="flex space-x-2">
+                            <button class="difficulty-btn px-4 py-2 rounded-lg bg-blue-100 text-blue-800 font-medium" data-level="facile">Facile</button>
+                            <button class="difficulty-btn px-4 py-2 rounded-lg bg-white border border-blue-200 text-blue-800 font-medium" data-level="moyen">Moyen</button>
+                            <button class="difficulty-btn px-4 py-2 rounded-lg bg-white border border-blue-200 text-blue-800 font-medium" data-level="difficile">Difficile</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Reading Speed -->
+                    <div>
+                        <h3 class="font-semibold text-blue-700 mb-3">Vitesse de lecture</h3>
+                        <div class="flex items-center">
+                            <span class="mr-2 text-gray-600"><i class="fas fa-turtle"></i></span>
+                            <input type="range" min="50" max="300" value="150" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer" id="speedSlider">
+                            <span class="ml-2 text-gray-600"><i class="fas fa-rabbit"></i></span>
+                        </div>
+                        <div class="text-sm text-gray-500 mt-1" id="speedValue">Vitesse: Moyenne</div>
+                    </div>
+                    
+                    <!-- Visual Aids -->
+                    <div>
+                        <h3 class="font-semibold text-blue-700 mb-3">Aides visuelles</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="form-checkbox text-blue-600 rounded" checked id="phoneticToggle">
+                                <span>Syllabes colorées</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="form-checkbox text-blue-600 rounded" checked id="highlightToggle">
+                                <span>Mise en évidence phonétique</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="form-checkbox text-blue-600 rounded" id="maskToggle">
+                                <span>Masque de lecture</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Font Settings -->
+                    <div>
+                        <h3 class="font-semibold text-blue-700 mb-3">Préférences de police</h3>
+                        <div class="flex space-x-2">
+                            <button class="font-btn px-3 py-2 rounded-lg bg-blue-100 text-blue-800" data-font="opendyslexic">
+                                <span class="dyslexia-friendly">OpenDyslexic</span>
+                            </button>
+                            <button class="font-btn px-3 py-2 rounded-lg bg-white border border-blue-200 text-blue-800" data-font="arial">
+                                Arial
+                            </button>
+                            <button class="font-btn px-3 py-2 rounded-lg bg-white border border-blue-200 text-blue-800" data-font="comic">
+                                Comic Sans
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <label class="flex items-center space-x-2">
+                                <input type="range" min="16" max="24" value="18" class="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer" id="fontSizeSlider">
+                                <span class="text-sm text-gray-600" id="fontSizeValue">18px</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Enregistrer les paramètres
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Story Selection -->
+            <div class="lg:col-span-1 bg-white rounded-xl shadow-md p-6 h-fit">
+                <h2 class="text-xl font-bold text-blue-800 mb-6">Histoires disponibles</h2>
+                
+                <div class="mb-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Rechercher une histoire..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <!-- Story Cards -->
+                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="le-petit-renard">
+                        <div class="flex items-start">
+                            <div class="bg-orange-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-fox text-orange-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-blue-800">Le Petit Renard Curieux</h3>
+                                <p class="text-sm text-gray-600">Niveau: Facile • 250 mots</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                    <span class="text-sm">4.8 (32 avis)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="la-grande-aventure">
+                        <div class="flex items-start">
+                            <div class="bg-purple-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-ship text-purple-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-blue-800">La Grande Aventure de Marin</h3>
+                                <p class="text-sm text-gray-600">Niveau: Moyen • 450 mots</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                    <span class="text-sm">4.6 (24 avis)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="le-mystere">
+                        <div class="flex items-start">
+                            <div class="bg-green-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-magnifying-glass text-green-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-blue-800">Le Mystère du Vieux Château</h3>
+                                <p class="text-sm text-gray-600">Niveau: Difficile • 750 mots</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                    <span class="text-sm">4.9 (18 avis)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="les-trois-souhaits">
+                        <div class="flex items-start">
+                            <div class="bg-red-100 p-3 rounded-lg mr-4">
+                                <i class="fas fa-wand-magic-sparkles text-red-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-blue-800">Les Trois Souhaits</h3>
+                                <p class="text-sm text-gray-600">Niveau: Facile • 300 mots</p>
+                                <div class="flex items-center mt-2">
+                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                    <span class="text-sm">4.7 (15 avis)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <button class="w-full bg-blue-100 text-blue-800 px-4 py-2 rounded-lg hover:bg-blue-200 transition font-medium">
+                        <i class="fas fa-plus mr-2"></i> Voir plus d'histoires
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Reading Area -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <!-- Story Header -->
+                    <div class="bg-blue-600 text-white p-4">
+                        <div class="flex justify-between items-center">
+                            <h2 id="storyTitle" class="text-xl font-bold">Le Petit Renard Curieux</h2>
+                            <div class="flex items-center space-x-2">
+                                <button id="playAudio" class="bg-blue-500 hover:bg-blue-400 p-2 rounded-full">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                                <button id="pauseAudio" class="bg-blue-500 hover:bg-blue-400 p-2 rounded-full">
+                                    <i class="fas fa-pause"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="w-full bg-blue-400 rounded-full h-2">
+                                <div id="progressBar" class="progress-bar bg-yellow-300 h-2 rounded-full" style="width: 30%"></div>
+                            </div>
+                            <div class="flex justify-between text-xs mt-1">
+                                <span>Progrès: 30%</span>
+                                <span>Temps restant: 5 min</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Story Content -->
+                    <div class="p-6 dyslexia-friendly" id="storyContent" style="font-size: 18px;">
+                        <p class="mb-4">Il était une fois un <span class="syllable">pe</span><span class="syllable">tit</span> <span class="phonetic-highlight">renard</span> nommé Léo qui vivait dans une forêt dense. Contrairement aux autres renards, Léo était incroyablement curieux.</p>
+                        
+                        <p class="mb-4">Un jour, en se promenant près de la rivière, Léo remarqua quelque chose d'étrange. Il y avait une <span class="syllable">pe</span><span class="syllable">tite</span> <span class="phonetic-highlight">boîte</span> en métal brillant qui flottait sur l'eau.</p>
+                        
+                        <p class="mb-4">"Qu'est-ce que cela peut bien être ?" se demanda Léo. Il s'approcha prudemment et tendit sa <span class="syllable">pa</span><span class="syllable">tou</span><span class="syllable">e</span> pour toucher la boîte mystérieuse.</p>
+                        
+                        <p class="mb-4">Soudain, la boîte s'ouvrit avec un <span class="syllable">clic</span> ! À l'intérieur, il y avait une <span class="syllable">car</span><span class="syllable">te</span> avec des marques étranges. Léo ne savait pas lire, mais il était déterminé à découvrir le <span class="phonetic-highlight">secret</span> de cette carte.</p>
+                        
+                        <p class="mb-4">Il décida de demander de l'aide à son ami le plus sage de la forêt : Maître Hibou. Le vieil hibou examina la carte avec attention et ses yeux s'illuminèrent.</p>
+                        
+                        <p>"Léo, tu as trouvé une carte au trésor !" s'exclama Maître Hibou. "Mais attention, le chemin sera semé d'embûches. Es-tu prêt pour cette <span class="phonetic-highlight">aventure</span> ?"</p>
+                    </div>
+                    
+                    <!-- Reading Controls -->
+                    <div class="border-t border-gray-200 p-4 bg-gray-50">
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-2">
+                                <button id="prevPage" class="bg-white border border-gray-300 p-2 rounded-lg hover:bg-gray-100">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <button id="nextPage" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="flex items-center space-x-4">
+                                <button id="helpBtn" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-question-circle text-xl"></i>
+                                </button>
+                                <button id="bookmarkBtn" class="text-blue-600 hover:text-blue-800">
+                                    <i class="fas fa-bookmark text-xl"></i>
+                                </button>
+                                <button id="dictBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+                                    <i class="fas fa-book mr-2"></i> Dictionnaire
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Reading Assistance Tools -->
+                <div class="mt-6 bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4">Outils d'aide à la lecture</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-spell-check text-blue-600"></i>
+                                </div>
+                                <h3 class="font-semibold">Décomposition syllabique</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">Cliquez sur les syllabes pour entendre leur prononciation et voir leur mise en évidence.</p>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-green-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-volume-up text-green-600"></i>
+                                </div>
+                                <h3 class="font-semibold">Lecture audio</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">Écoutez l'histoire lue par un narrateur natif avec une prononciation claire.</p>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-highlighter text-purple-600"></i>
+                                </div>
+                                <h3 class="font-semibold">Masque de lecture</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">Activez le masque pour vous concentrer sur une ligne à la fois.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dictionary Modal -->
+    <div id="dictModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
+            <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Dictionnaire</h3>
+                <button id="closeDictModal" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4">
+                <div class="relative mb-4">
+                    <input type="text" placeholder="Rechercher un mot..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                
+                <div class="border rounded-lg overflow-hidden">
+                    <div class="border-b p-3 bg-gray-50">
+                        <h4 class="font-bold text-blue-800">Renard</h4>
+                        <p class="text-sm text-gray-600">Nom masculin</p>
+                    </div>
+                    <div class="p-3">
+                        <p class="mb-2">Mammifère carnivore de la famille des canidés, au museau pointu, aux oreilles triangulaires et à la queue touffue.</p>
+                        <div class="flex items-center text-sm text-blue-600">
+                            <i class="fas fa-volume-up mr-2"></i>
+                            <span>Écouter la prononciation</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 border rounded-lg overflow-hidden">
+                    <div class="border-b p-3 bg-gray-50">
+                        <h4 class="font-bold text-blue-800">Curieux</h4>
+                        <p class="text-sm text-gray-600">Adjectif</p>
+                    </div>
+                    <div class="p-3">
+                        <p class="mb-2">Qui a un vif désir de voir, de savoir, d'apprendre.</p>
+                        <div class="flex items-center text-sm text-blue-600">
+                            <i class="fas fa-volume-up mr-2"></i>
+                            <span>Écouter la prononciation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Modal -->
+    <div id="helpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Aide & Astuces</h3>
+                <button id="closeHelpModal" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4">
+                <div class="mb-6">
+                    <h4 class="font-bold text-blue-800 mb-2">Comment utiliser Lire avec Léo</h4>
+                    <p class="text-sm text-gray-700 mb-3">Notre application est conçue pour aider les enfants neurodivergents à apprendre à lire en français de manière ludique et adaptée.</p>
+                    
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-font text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold">Polices adaptées</h5>
+                                <p class="text-sm text-gray-600">Utilisez la police OpenDyslexic ou choisissez celle qui vous convient le mieux dans les paramètres.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-green-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-tachometer-alt text-green-600"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold">Vitesse ajustable</h5>
+                                <p class="text-sm text-gray-600">Adaptez la vitesse de lecture audio à votre rythme d'apprentissage.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-highlighter text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-semibold">Aides visuelles</h5>
+                                <p class="text-sm text-gray-600">Activez les syllabes colorées et la mise en évidence phonétique pour faciliter la lecture.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200">
+                    <h4 class="font-bold text-blue-800 mb-2">Conseils pour les parents</h4>
+                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-700">
+                        <li>Encouragez votre enfant à lire un peu chaque jour</li>
+                        <li>Félicitez les progrès, même petits</li>
+                        <li>Lisez ensemble en alternant les phrases</li>
+                        <li>Utilisez le dictionnaire pour expliquer les mots difficiles</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle Settings Panel
+        const settingsToggle = document.getElementById('settingsToggle');
+        const settingsPanel = document.getElementById('settingsPanel');
+        
+        settingsToggle.addEventListener('click', () => {
+            settingsPanel.classList.toggle('open');
+        });
+        
+        // Difficulty Buttons
+        const difficultyButtons = document.querySelectorAll('.difficulty-btn');
+        difficultyButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                difficultyButtons.forEach(btn => {
+                    btn.classList.remove('bg-blue-100');
+                    btn.classList.add('bg-white', 'border', 'border-blue-200');
+                });
+                button.classList.add('bg-blue-100');
+                button.classList.remove('bg-white', 'border', 'border-blue-200');
+                
+                // Update story difficulty display (in a real app, this would filter stories)
+                console.log(`Difficulty set to: ${button.dataset.level}`);
+            });
+        });
+        
+        // Font Buttons
+        const fontButtons = document.querySelectorAll('.font-btn');
+        fontButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                fontButtons.forEach(btn => {
+                    btn.classList.remove('bg-blue-100');
+                    btn.classList.add('bg-white', 'border', 'border-blue-200');
+                });
+                button.classList.add('bg-blue-100');
+                button.classList.remove('bg-white', 'border', 'border-blue-200');
+                
+                // Change font family
+                const fontFamily = button.dataset.font === 'opendyslexic' ? 'OpenDyslexic' : 
+                                  button.dataset.font === 'comic' ? '"Comic Sans MS", cursive' : 'Arial';
+                
+                document.body.style.fontFamily = fontFamily;
+            });
+        });
+        
+        // Font Size Slider
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        
+        fontSizeSlider.addEventListener('input', () => {
+            const size = fontSizeSlider.value;
+            fontSizeValue.textContent = `${size}px`;
+            document.getElementById('storyContent').style.fontSize = `${size}px`;
+        });
+        
+        // Reading Speed Slider
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        
+        speedSlider.addEventListener('input', () => {
+            const speed = speedSlider.value;
+            let speedText = '';
+            
+            if (speed < 100) speedText = 'Très lente';
+            else if (speed < 150) speedText = 'Lente';
+            else if (speed < 200) speedText = 'Moyenne';
+            else if (speed < 250) speedText = 'Rapide';
+            else speedText = 'Très rapide';
+            
+            speedValue.textContent = `Vitesse: ${speedText}`;
+        });
+        
+        // Toggle Phonetic Highlights
+        const highlightToggle = document.getElementById('highlightToggle');
+        highlightToggle.addEventListener('change', () => {
+            const highlights = document.querySelectorAll('.phonetic-highlight');
+            highlights.forEach(highlight => {
+                highlight.style.display = highlightToggle.checked ? 'inline' : 'none';
+            });
+        });
+        
+        // Dictionary Modal
+        const dictBtn = document.getElementById('dictBtn');
+        const dictModal = document.getElementById('dictModal');
+        const closeDictModal = document.getElementById('closeDictModal');
+        
+        dictBtn.addEventListener('click', () => {
+            dictModal.classList.remove('hidden');
+        });
+        
+        closeDictModal.addEventListener('click', () => {
+            dictModal.classList.add('hidden');
+        });
+        
+        // Help Modal
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const closeHelpModal = document.getElementById('closeHelpModal');
+        
+        helpBtn.addEventListener('click', () => {
+            helpModal.classList.remove('hidden');
+        });
+        
+        closeHelpModal.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+        });
+        
+        // Story Selection
+        const storyCards = document.querySelectorAll('.story-card');
+        storyCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // In a real app, this would load the selected story
+                document.getElementById('storyTitle').textContent = card.querySelector('h3').textContent;
+                document.getElementById('progressBar').style.width = '0%';
+                
+                // Visual feedback
+                storyCards.forEach(c => c.classList.remove('border-blue-400', 'bg-blue-100'));
+                card.classList.add('border-blue-400', 'bg-blue-100');
+            });
+        });
+        
+        // Syllable Hover Effect
+        const syllables = document.querySelectorAll('.syllable');
+        syllables.forEach(syllable => {
+            syllable.addEventListener('mouseenter', () => {
+                // In a real app, this would play the syllable sound
+                console.log(`Playing sound for syllable: ${syllable.textContent}`);
+            });
+        });
+        
+        // Audio Controls
+        const playAudio = document.getElementById('playAudio');
+        const pauseAudio = document.getElementById('pauseAudio');
+        
+        playAudio.addEventListener('click', () => {
+            // In a real app, this would play the audio narration
+            console.log('Playing audio narration');
+            
+            // Simulate progress
+            let progress = 30;
+            const interval = setInterval(() => {
+                progress += 1;
+                document.getElementById('progressBar').style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        });
+        
+        pauseAudio.addEventListener('click', () => {
+            console.log('Pausing audio narration');
+        });
+        
+        // Initialize with first story selected
+        storyCards[0].click();
+    </script>
+</body>
+</html>
