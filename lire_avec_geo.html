@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lire avec Géo - Apprentissage adapté</title>
+    <title>Lire avec Léo - Apprentissage adapté</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=OpenDyslexic:wght@400;700&display=swap" rel="stylesheet">
@@ -66,6 +66,43 @@
         .settings-panel.open {
             max-height: 500px;
         }
+        
+        .reading-mask {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-top: 2px solid #3b82f6;
+            border-bottom: 2px solid #3b82f6;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .achievement-badge {
+            animation: bounce 0.5s ease infinite alternate;
+        }
+        
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+        
+        .floating-toolbar {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .emoji-picker {
+            position: absolute;
+            bottom: 60px;
+            right: 0;
+            width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-blue-50">
@@ -76,10 +113,19 @@
                 <div class="bg-blue-600 text-white p-3 rounded-full mr-4">
                     <i class="fas fa-book-open text-2xl"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-blue-800">Lire avec Géo</h1>
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-800">Lire avec Léo</h1>
+                    <p class="text-sm text-blue-600">Créé par Geoffroy Streit</p>
+                </div>
             </div>
             
             <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="notifBtn" class="bg-white p-3 rounded-full shadow-md hover:bg-blue-100 transition relative">
+                        <i class="fas fa-bell text-blue-600 text-xl"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 text-white text-xs flex items-center justify-center">3</span>
+                    </button>
+                </div>
                 <button id="settingsToggle" class="bg-white p-3 rounded-full shadow-md hover:bg-blue-100 transition">
                     <i class="fas fa-cog text-blue-600 text-xl"></i>
                 </button>
@@ -133,6 +179,10 @@
                                 <input type="checkbox" class="form-checkbox text-blue-600 rounded" id="maskToggle">
                                 <span>Masque de lecture</span>
                             </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" class="form-checkbox text-blue-600 rounded" id="lineSpacingToggle">
+                                <span>Espacement accru</span>
+                            </label>
                         </div>
                     </div>
                     
@@ -157,6 +207,30 @@
                             </label>
                         </div>
                     </div>
+                    
+                    <!-- Color Themes -->
+                    <div>
+                        <h3 class="font-semibold text-blue-700 mb-3">Thème de couleurs</h3>
+                        <div class="flex space-x-2">
+                            <button class="theme-btn w-8 h-8 rounded-full bg-white border-2 border-blue-500" data-theme="light"></button>
+                            <button class="theme-btn w-8 h-8 rounded-full bg-gray-800 border-2 border-transparent" data-theme="dark"></button>
+                            <button class="theme-btn w-8 h-8 rounded-full bg-yellow-100 border-2 border-transparent" data-theme="sepia"></button>
+                            <button class="theme-btn w-8 h-8 rounded-full bg-blue-50 border-2 border-transparent" data-theme="blue"></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Reading Mode -->
+                    <div>
+                        <h3 class="font-semibold text-blue-700 mb-3">Mode de lecture</h3>
+                        <div class="flex space-x-2">
+                            <button class="mode-btn px-3 py-2 rounded-lg bg-blue-100 text-blue-800" data-mode="guided">
+                                Guidé
+                            </button>
+                            <button class="mode-btn px-3 py-2 rounded-lg bg-white border border-blue-200 text-blue-800" data-mode="independent">
+                                Autonome
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="mt-6 pt-4 border-t border-gray-200">
@@ -167,96 +241,198 @@
             </div>
         </div>
         
+        <!-- Achievement Notification -->
+        <div id="achievementToast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center transform translate-x-full transition-transform duration-300 z-50">
+            <div class="bg-white text-green-500 p-2 rounded-full mr-3">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div>
+                <p class="font-bold">Nouveau badge débloqué!</p>
+                <p class="text-sm">Lecteur assidu - 5 jours consécutifs</p>
+            </div>
+            <button class="ml-4" onclick="hideAchievement()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
         <!-- Main Content -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Story Selection -->
-            <div class="lg:col-span-1 bg-white rounded-xl shadow-md p-6 h-fit">
-                <h2 class="text-xl font-bold text-blue-800 mb-6">Histoires disponibles</h2>
-                
-                <div class="mb-4">
-                    <div class="relative">
-                        <input type="text" placeholder="Rechercher une histoire..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+            <!-- Left Column - Story Selection & Progress -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Story Selection -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-blue-800 mb-6">Histoires disponibles</h2>
+                    
+                    <div class="mb-4">
+                        <div class="relative">
+                            <input type="text" placeholder="Rechercher une histoire..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                        <!-- Story Cards -->
+                        <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="le-petit-renard">
+                            <div class="flex items-start">
+                                <div class="bg-orange-100 p-3 rounded-lg mr-4">
+                                    <i class="fas fa-fox text-orange-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-blue-800">Le Petit Renard Curieux</h3>
+                                    <p class="text-sm text-gray-600">Niveau: Facile • 250 mots</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                        <span class="text-sm">4.8 (32 avis)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="la-grande-aventure">
+                            <div class="flex items-start">
+                                <div class="bg-purple-100 p-3 rounded-lg mr-4">
+                                    <i class="fas fa-ship text-purple-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-blue-800">La Grande Aventure de Marin</h3>
+                                    <p class="text-sm text-gray-600">Niveau: Moyen • 450 mots</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                        <span class="text-sm">4.6 (24 avis)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="le-mystere">
+                            <div class="flex items-start">
+                                <div class="bg-green-100 p-3 rounded-lg mr-4">
+                                    <i class="fas fa-magnifying-glass text-green-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-blue-800">Le Mystère du Vieux Château</h3>
+                                    <p class="text-sm text-gray-600">Niveau: Difficile • 750 mots</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                        <span class="text-sm">4.9 (18 avis)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="les-trois-souhaits">
+                            <div class="flex items-start">
+                                <div class="bg-red-100 p-3 rounded-lg mr-4">
+                                    <i class="fas fa-wand-magic-sparkles text-red-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-blue-800">Les Trois Souhaits</h3>
+                                    <p class="text-sm text-gray-600">Niveau: Facile • 300 mots</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                        <span class="text-sm">4.7 (15 avis)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="le-jardin">
+                            <div class="flex items-start">
+                                <div class="bg-yellow-100 p-3 rounded-lg mr-4">
+                                    <i class="fas fa-leaf text-yellow-500 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-blue-800">Le Jardin Secret</h3>
+                                    <p class="text-sm text-gray-600">Niveau: Moyen • 500 mots</p>
+                                    <div class="flex items-center mt-2">
+                                        <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
+                                        <span class="text-sm">4.5 (21 avis)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <button class="w-full bg-blue-100 text-blue-800 px-4 py-2 rounded-lg hover:bg-blue-200 transition font-medium">
+                            <i class="fas fa-plus mr-2"></i> Voir plus d'histoires
+                        </button>
                     </div>
                 </div>
                 
-                <div class="space-y-4">
-                    <!-- Story Cards -->
-                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="le-petit-renard">
-                        <div class="flex items-start">
-                            <div class="bg-orange-100 p-3 rounded-lg mr-4">
-                                <i class="fas fa-fox text-orange-500 text-xl"></i>
+                <!-- Progress Tracking -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4">Vos progrès</h2>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <h3 class="font-semibold text-blue-700">Objectif hebdomadaire</h3>
+                            <span class="text-sm font-medium">3/5 histoires</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 60%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-calendar-check text-blue-600"></i>
                             </div>
                             <div>
-                                <h3 class="font-bold text-blue-800">Le Petit Renard Curieux</h3>
-                                <p class="text-sm text-gray-600">Niveau: Facile • 250 mots</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
-                                    <span class="text-sm">4.8 (32 avis)</span>
-                                </div>
+                                <p class="font-medium">Série actuelle</p>
+                                <p class="text-sm text-gray-600">4 jours consécutifs</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="bg-green-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-clock text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Temps de lecture</p>
+                                <p class="text-sm text-gray-600">2h 45m cette semaine</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                                <i class="fas fa-book-open-reader text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Mots lus</p>
+                                <p class="text-sm text-gray-600">1,850 mots</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="la-grande-aventure">
-                        <div class="flex items-start">
-                            <div class="bg-purple-100 p-3 rounded-lg mr-4">
-                                <i class="fas fa-ship text-purple-500 text-xl"></i>
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <h3 class="font-semibold text-blue-700 mb-3">Vos badges</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <div class="achievement-badge bg-yellow-100 text-yellow-800 p-2 rounded-full flex items-center">
+                                <i class="fas fa-medal mr-1"></i>
+                                <span class="text-xs">Débutant</span>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-blue-800">La Grande Aventure de Marin</h3>
-                                <p class="text-sm text-gray-600">Niveau: Moyen • 450 mots</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
-                                    <span class="text-sm">4.6 (24 avis)</span>
-                                </div>
+                            <div class="achievement-badge bg-blue-100 text-blue-800 p-2 rounded-full flex items-center">
+                                <i class="fas fa-fire mr-1"></i>
+                                <span class="text-xs">3 jours</span>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="le-mystere">
-                        <div class="flex items-start">
-                            <div class="bg-green-100 p-3 rounded-lg mr-4">
-                                <i class="fas fa-magnifying-glass text-green-500 text-xl"></i>
+                            <div class="achievement-badge bg-green-100 text-green-800 p-2 rounded-full flex items-center">
+                                <i class="fas fa-book mr-1"></i>
+                                <span class="text-xs">5 histoires</span>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-blue-800">Le Mystère du Vieux Château</h3>
-                                <p class="text-sm text-gray-600">Niveau: Difficile • 750 mots</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
-                                    <span class="text-sm">4.9 (18 avis)</span>
-                                </div>
+                            <div class="achievement-badge bg-purple-100 text-purple-800 p-2 rounded-full flex items-center">
+                                <i class="fas fa-star mr-1"></i>
+                                <span class="text-xs">Étoile</span>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="story-card bg-blue-50 border border-blue-100 rounded-lg p-4 cursor-pointer transition transform hover:shadow-lg" data-story="les-trois-souhaits">
-                        <div class="flex items-start">
-                            <div class="bg-red-100 p-3 rounded-lg mr-4">
-                                <i class="fas fa-wand-magic-sparkles text-red-500 text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-blue-800">Les Trois Souhaits</h3>
-                                <p class="text-sm text-gray-600">Niveau: Facile • 300 mots</p>
-                                <div class="flex items-center mt-2">
-                                    <span class="text-yellow-500 mr-1"><i class="fas fa-star"></i></span>
-                                    <span class="text-sm">4.7 (15 avis)</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mt-6 pt-4 border-t border-gray-200">
-                    <button class="w-full bg-blue-100 text-blue-800 px-4 py-2 rounded-lg hover:bg-blue-200 transition font-medium">
-                        <i class="fas fa-plus mr-2"></i> Voir plus d'histoires
-                    </button>
                 </div>
             </div>
             
-            <!-- Reading Area -->
+            <!-- Right Column - Reading Area -->
             <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden relative" id="readingContainer">
                     <!-- Story Header -->
                     <div class="bg-blue-600 text-white p-4">
                         <div class="flex justify-between items-center">
@@ -267,6 +443,9 @@
                                 </button>
                                 <button id="pauseAudio" class="bg-blue-500 hover:bg-blue-400 p-2 rounded-full">
                                     <i class="fas fa-pause"></i>
+                                </button>
+                                <button id="repeatBtn" class="bg-blue-500 hover:bg-blue-400 p-2 rounded-full">
+                                    <i class="fas fa-redo"></i>
                                 </button>
                             </div>
                         </div>
@@ -358,7 +537,130 @@
                             <p class="text-sm text-gray-600">Activez le masque pour vous concentrer sur une ligne à la fois.</p>
                         </div>
                     </div>
+                    
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-yellow-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-palette text-yellow-600"></i>
+                                </div>
+                                <h3 class="font-semibold">Thèmes visuels</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">Choisissez un fond et des couleurs adaptés à vos préférences visuelles.</p>
+                        </div>
+                        
+                        <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-red-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-tachometer-alt text-red-600"></i>
+                                </div>
+                                <h3 class="font-semibold">Vitesse ajustable</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">Adaptez la vitesse de lecture à votre rythme de compréhension.</p>
+                        </div>
+                        
+                        <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                            <div class="flex items-center mb-2">
+                                <div class="bg-indigo-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-language text-indigo-600"></i>
+                                </div>
+                                <h3 class="font-semibold">Dictionnaire intégré</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">Trouvez instantanément la définition des mots difficiles.</p>
+                        </div>
+                    </div>
                 </div>
+                
+                <!-- Comprehension Questions -->
+                <div class="mt-6 bg-white rounded-xl shadow-md p-6">
+                    <h2 class="text-xl font-bold text-blue-800 mb-4">Questions de compréhension</h2>
+                    
+                    <div class="space-y-4">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <p class="font-medium mb-2">1. Comment s'appelle le petit renard de l'histoire ?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q1" class="form-radio text-blue-600">
+                                    <span>Martin</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q1" class="form-radio text-blue-600">
+                                    <span>Léo</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q1" class="form-radio text-blue-600">
+                                    <span>Arthur</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <p class="font-medium mb-2">2. Qu'a trouvé Léo près de la rivière ?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q2" class="form-radio text-blue-600">
+                                    <span>Une pierre brillante</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q2" class="form-radio text-blue-600">
+                                    <span>Une boîte en métal</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q2" class="form-radio text-blue-600">
+                                    <span>Un poisson</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <p class="font-medium mb-2">3. Qui a aidé Léo à comprendre ce qu'il avait trouvé ?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q3" class="form-radio text-blue-600">
+                                    <span>Le lapin</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q3" class="form-radio text-blue-600">
+                                    <span>Maître Hibou</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="radio" name="q3" class="form-radio text-blue-600">
+                                    <span>La souris</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            Vérifier mes réponses
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Toolbar -->
+    <div class="floating-toolbar">
+        <button id="mainToolbarBtn" class="bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition transform hover:scale-110">
+            <i class="fas fa-plus text-xl"></i>
+        </button>
+        
+        <div class="emoji-picker" id="emojiPicker">
+            <div class="grid grid-cols-6 gap-2">
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">😊</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">👍</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">❤️</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">🎉</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">🤔</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">😢</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">😂</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">😍</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">🤩</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">😎</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">🧐</button>
+                <button class="emoji-btn text-2xl hover:bg-gray-100 rounded p-2">🤯</button>
             </div>
         </div>
     </div>
@@ -465,7 +767,93 @@
                         <li>Félicitez les progrès, même petits</li>
                         <li>Lisez ensemble en alternant les phrases</li>
                         <li>Utilisez le dictionnaire pour expliquer les mots difficiles</li>
+                        <li>Créez un environnement calme et sans distraction pour la lecture</li>
+                        <li>Relisez les mêmes histoires pour renforcer la confiance</li>
                     </ul>
+                </div>
+                
+                <div class="pt-4 border-t border-gray-200 mt-4">
+                    <h4 class="font-bold text-blue-800 mb-2">Ressources supplémentaires</h4>
+                    <div class="space-y-2">
+                        <a href="#" class="flex items-center text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            <span>Guide pour les parents d'enfants dyslexiques</span>
+                        </a>
+                        <a href="#" class="flex items-center text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            <span>Exercices complémentaires de phonétique</span>
+                        </a>
+                        <a href="#" class="flex items-center text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            <span>Communauté de soutien en ligne</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification Panel -->
+    <div id="notifPanel" class="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-end z-50 hidden">
+        <div class="bg-white rounded-l-xl w-full max-w-sm h-full overflow-y-auto">
+            <div class="bg-blue-600 text-white p-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Notifications</h3>
+                <button id="closeNotifPanel" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 space-y-4">
+                <div class="border-b pb-4">
+                    <div class="flex items-start">
+                        <div class="bg-blue-100 text-blue-600 p-2 rounded-full mr-3">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Nouveau badge débloqué!</p>
+                            <p class="text-sm text-gray-600">Vous avez terminé 5 histoires cette semaine.</p>
+                            <p class="text-xs text-gray-500 mt-1">Il y a 2 heures</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-b pb-4">
+                    <div class="flex items-start">
+                        <div class="bg-green-100 text-green-600 p-2 rounded-full mr-3">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Votre série continue!</p>
+                            <p class="text-sm text-gray-600">4 jours de lecture consécutifs. Continuez comme ça!</p>
+                            <p class="text-xs text-gray-500 mt-1">Hier</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-b pb-4">
+                    <div class="flex items-start">
+                        <div class="bg-purple-100 text-purple-600 p-2 rounded-full mr-3">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Nouvelle histoire disponible</p>
+                            <p class="text-sm text-gray-600">"Le Jardin Secret" a été ajouté à votre bibliothèque.</p>
+                            <p class="text-xs text-gray-500 mt-1">Il y a 2 jours</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-b pb-4">
+                    <div class="flex items-start">
+                        <div class="bg-yellow-100 text-yellow-600 p-2 rounded-full mr-3">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium">Rappel quotidien</p>
+                            <p class="text-sm text-gray-600">N'oubliez pas de lire aujourd'hui pour maintenir votre série!</p>
+                            <p class="text-xs text-gray-500 mt-1">Il y a 3 jours</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -515,6 +903,54 @@
             });
         });
         
+        // Theme Buttons
+        const themeButtons = document.querySelectorAll('.theme-btn');
+        themeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                themeButtons.forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'border-2');
+                });
+                button.classList.add('border-blue-500', 'border-2');
+                
+                // Change theme
+                const theme = button.dataset.theme;
+                const readingContainer = document.getElementById('readingContainer');
+                
+                switch(theme) {
+                    case 'dark':
+                        readingContainer.classList.add('bg-gray-800', 'text-white');
+                        readingContainer.classList.remove('bg-white', 'bg-yellow-50', 'bg-blue-50');
+                        break;
+                    case 'sepia':
+                        readingContainer.classList.add('bg-yellow-50');
+                        readingContainer.classList.remove('bg-white', 'bg-gray-800', 'bg-blue-50');
+                        break;
+                    case 'blue':
+                        readingContainer.classList.add('bg-blue-50');
+                        readingContainer.classList.remove('bg-white', 'bg-gray-800', 'bg-yellow-50');
+                        break;
+                    default: // light
+                        readingContainer.classList.add('bg-white');
+                        readingContainer.classList.remove('bg-gray-800', 'bg-yellow-50', 'bg-blue-50');
+                }
+            });
+        });
+        
+        // Mode Buttons
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        modeButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                modeButtons.forEach(btn => {
+                    btn.classList.remove('bg-blue-100');
+                    btn.classList.add('bg-white', 'border', 'border-blue-200');
+                });
+                button.classList.add('bg-blue-100');
+                button.classList.remove('bg-white', 'border', 'border-blue-200');
+                
+                console.log(`Mode set to: ${button.dataset.mode}`);
+            });
+        });
+        
         // Font Size Slider
         const fontSizeSlider = document.getElementById('fontSizeSlider');
         const fontSizeValue = document.getElementById('fontSizeValue');
@@ -551,6 +987,78 @@
             });
         });
         
+        // Toggle Reading Mask
+        const maskToggle = document.getElementById('maskToggle');
+        let readingMask = null;
+        
+        maskToggle.addEventListener('change', () => {
+            if (maskToggle.checked) {
+                createReadingMask();
+            } else {
+                if (readingMask) {
+                    readingMask.remove();
+                    readingMask = null;
+                }
+            }
+        });
+        
+        function createReadingMask() {
+            if (readingMask) readingMask.remove();
+            
+            readingMask = document.createElement('div');
+            readingMask.className = 'reading-mask';
+            readingMask.style.height = '40px';
+            readingMask.style.width = '100%';
+            
+            const storyContent = document.getElementById('storyContent');
+            storyContent.appendChild(readingMask);
+            
+            let currentLine = 0;
+            const lines = Array.from(storyContent.querySelectorAll('p'));
+            
+            function updateMaskPosition() {
+                if (currentLine >= lines.length) currentLine = 0;
+                if (currentLine < 0) currentLine = lines.length - 1;
+                
+                const line = lines[currentLine];
+                const rect = line.getBoundingClientRect();
+                const containerRect = storyContent.getBoundingClientRect();
+                
+                readingMask.style.top = `${rect.top - containerRect.top}px`;
+                readingMask.style.left = '0';
+                readingMask.style.width = '100%';
+                readingMask.style.height = `${rect.height}px`;
+            }
+            
+            updateMaskPosition();
+            
+            // Navigation with keyboard
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowDown') {
+                    currentLine++;
+                    updateMaskPosition();
+                } else if (e.key === 'ArrowUp') {
+                    currentLine--;
+                    updateMaskPosition();
+                }
+            });
+            
+            // Navigation with touch
+            storyContent.addEventListener('touchstart', (e) => {
+                const touchY = e.touches[0].clientY;
+                const maskRect = readingMask.getBoundingClientRect();
+                const maskCenter = maskRect.top + maskRect.height / 2;
+                
+                if (touchY < maskCenter) {
+                    currentLine--;
+                } else {
+                    currentLine++;
+                }
+                
+                updateMaskPosition();
+            });
+        }
+        
         // Dictionary Modal
         const dictBtn = document.getElementById('dictBtn');
         const dictModal = document.getElementById('dictModal');
@@ -575,6 +1083,19 @@
         
         closeHelpModal.addEventListener('click', () => {
             helpModal.classList.add('hidden');
+        });
+        
+        // Notification Panel
+        const notifBtn = document.getElementById('notifBtn');
+        const notifPanel = document.getElementById('notifPanel');
+        const closeNotifPanel = document.getElementById('closeNotifPanel');
+        
+        notifBtn.addEventListener('click', () => {
+            notifPanel.classList.remove('hidden');
+        });
+        
+        closeNotifPanel.addEventListener('click', () => {
+            notifPanel.classList.add('hidden');
         });
         
         // Story Selection
@@ -603,6 +1124,7 @@
         // Audio Controls
         const playAudio = document.getElementById('playAudio');
         const pauseAudio = document.getElementById('pauseAudio');
+        const repeatBtn = document.getElementById('repeatBtn');
         
         playAudio.addEventListener('click', () => {
             // In a real app, this would play the audio narration
@@ -616,6 +1138,7 @@
                 
                 if (progress >= 100) {
                     clearInterval(interval);
+                    showAchievement();
                 }
             }, 1000);
         });
@@ -624,8 +1147,46 @@
             console.log('Pausing audio narration');
         });
         
+        repeatBtn.addEventListener('click', () => {
+            console.log('Repeating current paragraph');
+        });
+        
+        // Floating Toolbar
+        const mainToolbarBtn = document.getElementById('mainToolbarBtn');
+        const emojiPicker = document.getElementById('emojiPicker');
+        
+        mainToolbarBtn.addEventListener('click', () => {
+            emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // Emoji Buttons
+        const emojiBtns = document.querySelectorAll('.emoji-btn');
+        emojiBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                console.log(`Emoji selected: ${btn.textContent}`);
+                emojiPicker.style.display = 'none';
+                
+                // In a real app, this would save the reaction
+            });
+        });
+        
+        // Achievement Notification
+        function showAchievement() {
+            const achievementToast = document.getElementById('achievementToast');
+            achievementToast.classList.remove('translate-x-full');
+            setTimeout(hideAchievement, 5000);
+        }
+        
+        function hideAchievement() {
+            const achievementToast = document.getElementById('achievementToast');
+            achievementToast.classList.add('translate-x-full');
+        }
+        
         // Initialize with first story selected
         storyCards[0].click();
+        
+        // Show achievement after 3 seconds (demo purposes)
+        setTimeout(showAchievement, 3000);
     </script>
 </body>
 </html>
